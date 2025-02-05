@@ -1,124 +1,377 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { JsonForms } from '@jsonforms/react';
-import { materialRenderers } from '@jsonforms/material-renderers';
-import { materialCells } from '@jsonforms/material-renderers';
+import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 import axios from 'axios';
-import { Button } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  FormControl,
+  FormLabel,
+  Paper,
+  Typography,
+  Box,
+  Container,
+} from '@mui/material';
+import Image from 'next/image';
 
-const schema = {
-  type: 'object',
-  properties: {
-    first_name: { type: 'string', title: 'First Name' },
-    last_name: { type: 'string', title: 'Last Name' },
-    email: { type: 'string', title: 'Email' },
-    linkedin_url: { type: 'string', title: 'LinkedIn URL' },
-    visas_of_interest: {
-      type: 'array',
-      title: 'Visas of Interest',
-      items: {
-        type: 'string',
-        enum: ['O-1', 'EB-1A', 'TN', "I don't Know"],
-      },
-      uniqueItems: true,
-    },
-    resume: { type: 'string', format: 'data-url', title: 'Resume / CV' },
-    comments: { type: 'string', title: 'Additional Comments' },
-  },
-  required: [
-    'first_name',
-    'last_name',
-    'email',
-    'linkedin_url',
-    'visas_of_interest',
-    'resume',
-  ],
-};
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  linkedin: string;
+  comments: string;
+  visa: string[];
+  resume: FileList;
+}
 
-const uischema = {
-  type: 'VerticalLayout',
-  elements: [
-    { type: 'Control', scope: '#/properties/first_name' },
-    { type: 'Control', scope: '#/properties/last_name' },
-    { type: 'Control', scope: '#/properties/email' },
-    { type: 'Control', scope: '#/properties/linkedin_url' },
-    { type: 'Control', scope: '#/properties/visas_of_interest' },
-    { type: 'Control', scope: '#/properties/comments' },
-  ],
-};
+const validationSchema = Yup.object({
+  firstName: Yup.string().required('First Name is required'),
+  lastName: Yup.string().required('Last Name is required'),
+  email: Yup.string().email('Invalid email').required('Email is required'),
+  linkedin: Yup.string()
+    .url('Invalid LinkedIn URL')
+    .required('LinkedIn is required'),
+  comments: Yup.string().required('This field is required'),
+  visa: Yup.array().min(1),
+  resume: Yup.mixed(),
+});
 
 export default function Home() {
-  const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+    reset,
+  } = useForm<FormData>({
+    resolver: yupResolver(validationSchema),
+  });
 
-  const [isClient, setIsClient] = useState(false);
+  const resumeFile = watch('resume');
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    const savedData = JSON.parse(localStorage.getItem('formData') || '{}');
+    Object.keys(savedData).forEach((key) => {
+      setValue(key as keyof FormData, savedData[key]);
+    });
+  }, [setValue]);
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setFormData((prev) => ({ ...prev, resume: e.target.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach((key) => {
+      formData.append(key, data[key as keyof FormData]);
+    });
 
-  const onSubmit = async () => {
+    localStorage.setItem('formData', JSON.stringify(data));
+
     try {
-      await axios.post('/api/leads', formData);
+      // await axios.post('/api/leads', formData);
+      console.log('deu certo: ', formData);
+
       setSubmitted(true);
+      reset();
+      localStorage.removeItem('formData');
     } catch (error) {
       console.error('Submission failed', error);
     }
   };
 
   if (submitted) {
-    return <p>Thank you for submitting your information!</p>;
+    return (
+      <Typography variant="h6" align="center">
+        Thank you for submitting your information!
+      </Typography>
+    );
   }
 
+  const handleClick = () => {
+    document.getElementById('resume-upload')?.click();
+  };
+
   return (
-    <div
-      style={{
-        maxWidth: '500px',
-        margin: 'auto',
-        padding: '20px',
-        border: '1px solid #ccc',
-        borderRadius: '8px',
-        backgroundColor: '#f9f9f9',
-      }}
-    >
-      {isClient && (
-        <JsonForms
-          schema={schema}
-          uischema={uischema}
-          data={formData}
-          renderers={materialRenderers}
-          cells={materialCells}
-          onChange={({ data }) => setFormData(data)}
-        />
-      )}
-      <div>
-        <label>Resume / CV:</label>
-        <input
-          type="file"
-          accept=".pdf,.doc,.docx"
-          onChange={handleFileUpload}
-        />
-      </div>
-      <Button
-        onClick={onSubmit}
-        variant="contained"
-        color="primary"
-        style={{ marginTop: '10px' }}
+    <Box>
+      <Box
+        sx={{
+          height: 300,
+          backgroundColor: '#d9dea5',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
       >
-        Submit
-      </Button>
-    </div>
+        <Container sx={{ textAlign: 'center' }}>
+          <Box sx={{ margin: '30px 0' }}>
+            <Image
+              src="/alma-logo.png"
+              width={90}
+              height={30}
+              style={{ objectFit: 'contain' }}
+              alt="logo"
+            />
+          </Box>
+          <Typography
+            variant="h2"
+            sx={{
+              color: '#000',
+              textAlign: 'left',
+              fontWeight: 700,
+              fontSize: { xs: '24px', sm: '32px', md: '60px', lg: '72px' },
+              textTransform: 'capitalize',
+            }}
+          >
+            get an assessment
+          </Typography>
+          <Typography
+            variant="h2"
+            sx={{
+              color: '#000',
+              textAlign: 'left',
+              fontWeight: 700,
+              fontSize: { xs: '24px', sm: '32px', md: '60px', lg: '72px' },
+              textTransform: 'capitalize',
+            }}
+          >
+            of your immigration case
+          </Typography>
+        </Container>
+      </Box>
+
+      <Container
+        maxWidth="sm"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            marginTop: 3,
+          }}
+        >
+          <Box>
+            <Image
+              src="/icon-magnifier.png"
+              width={50}
+              height={80}
+              style={{ objectFit: 'contain' }}
+              alt="logo"
+            />
+          </Box>
+          <Typography
+            variant="h5"
+            sx={{
+              color: '#000',
+              textAlign: 'center',
+              fontWeight: 700,
+              lineHeight: '22px',
+              marginBottom: 1,
+            }}
+          >
+            Want to understand your visa options?
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: '#000',
+              textAlign: 'center',
+              fontWeight: 700,
+              lineHeight: '16px',
+            }}
+          >
+            Submit the form below and our team of experienced attorneys will
+            review your information and send a preliminary assessment of your
+            case based on your goals.
+          </Typography>
+        </Box>
+        <Paper
+          elevation={3}
+          sx={{
+            p: 3,
+            mt: 5,
+            border: 'none',
+            boxShadow: 'none',
+            maxWidth: '500px',
+          }}
+        >
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <TextField
+              fullWidth
+              label="First Name"
+              {...register('firstName')}
+              error={!!errors.firstName}
+              helperText={errors.firstName?.message}
+              margin="normal"
+            />
+
+            <TextField
+              fullWidth
+              label="Last Name"
+              {...register('lastName')}
+              error={!!errors.lastName}
+              helperText={errors.lastName?.message}
+              margin="normal"
+            />
+
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              {...register('email')}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              margin="normal"
+            />
+
+            <TextField
+              fullWidth
+              label="LinkedIn Profile"
+              {...register('linkedin')}
+              error={!!errors.linkedin}
+              helperText={errors.linkedin?.message}
+              margin="normal"
+            />
+
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'column',
+                marginTop: 3,
+              }}
+            >
+              <Box>
+                <Image
+                  src="/icon-magnifier.png"
+                  width={50}
+                  height={80}
+                  style={{ objectFit: 'contain' }}
+                  alt="logo"
+                />
+              </Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  color: '#000',
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  lineHeight: '22px',
+                  marginBottom: 1,
+                }}
+              >
+                Visa categories of interest?
+              </Typography>
+            </Box>
+
+            <FormControl component="fieldset" margin="normal">
+              <FormLabel component="legend">
+                Visas you're interested in:
+              </FormLabel>
+              <FormGroup>
+                {['O-1', 'EB-1A', 'TN', "I don't Know"].map((visa) => (
+                  <FormControlLabel
+                    key={visa}
+                    control={<Checkbox {...register('visa')} value={visa} />}
+                    label={visa}
+                  />
+                ))}
+              </FormGroup>
+            </FormControl>
+
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'column',
+                marginTop: 3,
+              }}
+            >
+              <Box>
+                <Image
+                  src="/icon-magnifier.png"
+                  width={50}
+                  height={80}
+                  style={{ objectFit: 'contain' }}
+                  alt="logo"
+                />
+              </Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  color: '#000',
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  lineHeight: '22px',
+                  marginBottom: 1,
+                }}
+              >
+                How can we help you?
+              </Typography>
+            </Box>
+
+            <TextField
+              fullWidth
+              label="Additional Comments"
+              placeholder="What is your current status and when does it expire? What is your past immigration history? Are you looking for long-term permanent residency or shot-term employment visa or both? Are there any timeline considerations?"
+              multiline
+              rows={4}
+              {...register('comments')}
+              error={!!errors.comments}
+              helperText={errors.comments?.message}
+              margin="normal"
+            />
+
+            <Box>
+              <input
+                type="file"
+                id="resume-upload"
+                {...register('resume')}
+                onChange={(e) => {
+                  register('resume').onChange(e);
+                }}
+                style={{ display: 'none' }}
+              />
+
+              <Button
+                variant="contained"
+                component="span"
+                onClick={handleClick}
+                sx={{ mt: 2, backgroundColor: '#000' }}
+              >
+                Upload Resume
+              </Button>
+
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                {resumeFile?.length > 0 ? resumeFile[0].name : 'No file chosen'}
+              </Typography>
+            </Box>
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 2, backgroundColor: '#000' }}
+            >
+              Submit
+            </Button>
+          </form>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

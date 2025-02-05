@@ -17,20 +17,22 @@ const Home: React.FC = () => {
   const [password, setPassword] = useState('');
 
   const handleNavigate = (route: string): void => {
-    if (isAuthenticated) {
-      router.push(route);
-    } else {
+    if (route === '/leads' && !isAuthenticated) {
       setOpenModal(true);
+    } else {
+      router.push(route);
     }
   };
 
   const handleLogin = () => {
     dispatch(setUser({ username, password }));
     dispatch(authenticateUser());
+
+    // Após a autenticação, redirecionar para /leads
+    router.push('/leads');
     setOpenModal(false);
   };
 
-  // Redireciona após autenticação
   useEffect(() => {
     if (isAuthenticated) {
       router.push('/leads');
@@ -91,7 +93,6 @@ const Home: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Modal for login */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
         <Box
           sx={{

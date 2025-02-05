@@ -1,16 +1,23 @@
 'use client';
 
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  StyledContainer,
+  StyledBox,
+  StyledTitle,
+  StyledSubtitle,
+  StyledButton,
+} from './thankyou';
 
-const ThankYou = () => {
+const ThankYou: React.FC = () => {
   const router = useRouter();
 
   return (
-    <Container maxWidth="md" sx={{ textAlign: 'center', maxWidth: '500px' }}>
-      <Box sx={{ margin: '50px 0' }}>
+    <StyledContainer maxWidth="md">
+      <StyledBox>
         <Image
           src="/icon-magnifier.png"
           width={50}
@@ -18,47 +25,23 @@ const ThankYou = () => {
           style={{ objectFit: 'contain' }}
           alt="logo"
         />
-      </Box>
-      <Typography
-        variant="h2"
-        sx={{
-          color: '#000',
-          textAlign: 'center',
-          fontWeight: 700,
-          fontSize: '32px',
-          textTransform: 'capitalize',
-        }}
-      >
-        thank you
-      </Typography>
-      <Typography
-        variant="h6"
-        sx={{
-          color: '#000',
-          textAlign: 'center',
-          fontWeight: 700,
-          fontSize: '24px',
-        }}
-      >
+      </StyledBox>
+      <StyledTitle variant="h2">thank you</StyledTitle>
+      <StyledSubtitle variant="h6">
         Your information was submitted to our team of immigration attorneys.
-        Expect and email from hello@tryalma.ai.
-      </Typography>
+        Expect an email from hello@tryalma.ai.
+      </StyledSubtitle>
       <Box>
-        <Button
+        <StyledButton
           type="submit"
           variant="contained"
           color="primary"
-          style={{
-            textTransform: 'capitalize',
-            fontWeight: 'bold',
-          }}
-          sx={{ mt: 4, backgroundColor: '#000', width: '300px' }}
           onClick={() => router.push('/')}
         >
           go back to homepage
-        </Button>
+        </StyledButton>
       </Box>
-    </Container>
+    </StyledContainer>
   );
 };
 

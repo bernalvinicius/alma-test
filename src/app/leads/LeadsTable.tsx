@@ -10,21 +10,34 @@ import {
   TableRow,
   Button,
   TextField,
-  Select,
   MenuItem,
   Pagination,
-  Box,
   Grid,
 } from '@mui/material';
 
-const generateMockData = () => {
-  const countries = ['USA', 'Canada', 'Brazil', 'India', 'Germany'];
-  const statuses = ['PENDING', 'REACHED_OUT'];
-  const names = new Set();
-  const dates = new Set();
+import {
+  LeadsTableContainer,
+  SearchBox,
+  StatusFilterBox,
+  TableWrapper,
+  PaginationWrapper,
+} from './LeadsTableStyles';
 
-  // Função para gerar um nome único
-  const generateUniqueName = () => {
+type Lead = {
+  id: number;
+  name: string;
+  submitted: string;
+  status: 'PENDING' | 'REACHED_OUT';
+  country: string;
+};
+
+const generateMockData = (): Lead[] => {
+  const countries = ['USA', 'Canada', 'Brazil', 'India', 'Germany'];
+  const statuses: Lead['status'][] = ['PENDING', 'REACHED_OUT'];
+  const names = new Set<string>();
+  const dates = new Set<string>();
+
+  const generateUniqueName = (): string => {
     let name;
     do {
       name = `Lead ${Math.floor(Math.random() * 1000)}`;
@@ -33,11 +46,10 @@ const generateMockData = () => {
     return name;
   };
 
-  // Função para gerar uma data única
-  const generateUniqueDate = () => {
+  const generateUniqueDate = (): string => {
     let date;
     do {
-      const randomDays = Math.floor(Math.random() * 365); // Dias aleatórios nos últimos 365 dias
+      const randomDays = Math.floor(Math.random() * 365);
       date = new Date(
         Date.now() - randomDays * 24 * 60 * 60 * 1000
       ).toLocaleDateString();
@@ -56,11 +68,13 @@ const generateMockData = () => {
 };
 
 const LeadsTable = () => {
-  const [data, setData] = useState(generateMockData());
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; // Altere para 8 itens por página
+  const [data, setData] = useState<Lead[]>(generateMockData());
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<
+    'PENDING' | 'REACHED_OUT' | ''
+  >('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 8;
 
   const filteredData = data
     .filter(
@@ -78,37 +92,9 @@ const LeadsTable = () => {
     ).length / itemsPerPage
   );
 
-  const columns = [
-    { Header: 'Name', accessor: 'name' },
-    { Header: 'Submitted', accessor: 'submitted' },
-    { Header: 'Status', accessor: 'status' },
-    { Header: 'Country', accessor: 'country' },
-    {
-      Header: 'Actions',
-      Cell: ({ row }) => (
-        <Button
-          onClick={() => {
-            const updatedData = [...data];
-            updatedData[row.index].status =
-              updatedData[row.index].status === 'PENDING'
-                ? 'REACHED_OUT'
-                : 'PENDING';
-            setData(updatedData);
-          }}
-        >
-          Change Status
-        </Button>
-      ),
-    },
-  ];
-
   return (
-    <div>
-      <Box
-        style={{
-          padding: '10px 0',
-        }}
-      >
+    <LeadsTableContainer>
+      <SearchBox>
         <Grid container spacing={2} alignItems="center">
           <Grid item>
             <TextField
@@ -121,9 +107,13 @@ const LeadsTable = () => {
             />
           </Grid>
           <Grid item>
-            <Select
+            <StatusFilterBox
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) =>
+                setStatusFilter(
+                  e.target.value as 'PENDING' | 'REACHED_OUT' | ''
+                )
+              }
               displayEmpty
               fullWidth
               sx={{ width: 350 }}
@@ -131,22 +121,38 @@ const LeadsTable = () => {
               <MenuItem value="">Status</MenuItem>
               <MenuItem value="PENDING">Pending</MenuItem>
               <MenuItem value="REACHED_OUT">Reached Out</MenuItem>
-            </Select>
+            </StatusFilterBox>
           </Grid>
         </Grid>
-      </Box>
-      <Box
-        style={{
-          border: '1px solid #333',
-          padding: '10px',
-          borderRadius: '10px',
-        }}
-      >
+      </SearchBox>
+      <TableWrapper>
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow>
-                {columns.map((column) => (
+                {[
+                  { Header: 'Name', accessor: 'name' },
+                  { Header: 'Submitted', accessor: 'submitted' },
+                  { Header: 'Status', accessor: 'status' },
+                  { Header: 'Country', accessor: 'country' },
+                  {
+                    Header: 'Actions',
+                    Cell: ({ row }: { row: { index: number } }) => (
+                      <Button
+                        onClick={() => {
+                          const updatedData = [...data];
+                          updatedData[row.index].status =
+                            updatedData[row.index].status === 'PENDING'
+                              ? 'REACHED_OUT'
+                              : 'PENDING';
+                          setData(updatedData);
+                        }}
+                      >
+                        Change Status
+                      </Button>
+                    ),
+                  },
+                ].map((column) => (
                   <TableCell sx={{ fontWeight: 'bold' }} key={column.Header}>
                     {column.Header}
                   </TableCell>
@@ -179,22 +185,16 @@ const LeadsTable = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        <Box
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            padding: '15px 0',
-          }}
-        >
+        <PaginationWrapper>
           <Pagination
             count={totalPages}
             page={currentPage}
             onChange={(event, value) => setCurrentPage(value)}
             color="primary"
           />
-        </Box>
-      </Box>
-    </div>
+        </PaginationWrapper>
+      </TableWrapper>
+    </LeadsTableContainer>
   );
 };
 

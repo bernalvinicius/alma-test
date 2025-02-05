@@ -1,20 +1,26 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import {
-  Avatar,
-  Box,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-} from '@mui/material';
-import Image from 'next/image';
+'use client';
 
-const Layout = ({ children }) => (
+import React, { ReactNode } from 'react';
+import Link from 'next/link';
+import { Avatar, List, ListItemText } from '@mui/material';
+import Image from 'next/image';
+import {
+  DrawerContainer,
+  LogoContainer,
+  StyledListItem,
+  AvatarContainer,
+  MainContent,
+} from './LayoutStyles';
+
+interface LayoutProps {
+  children: ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => (
   <>
-    <Drawer
+    <DrawerContainer
       variant="permanent"
       sx={{ flexShrink: 0 }}
       PaperProps={{
@@ -26,7 +32,7 @@ const Layout = ({ children }) => (
         },
       }}
     >
-      <Box sx={{ margin: '20px 10px' }}>
+      <LogoContainer>
         <Image
           src="/alma-logo.png"
           width={90}
@@ -34,36 +40,27 @@ const Layout = ({ children }) => (
           style={{ objectFit: 'contain' }}
           alt="logo"
         />
-      </Box>
+      </LogoContainer>
       <List sx={{ flexGrow: 1 }}>
-        <ListItem component={Link} href="/leads">
+        <StyledListItem component={Link} href="/leads">
           <ListItemText primary="Leads" />
-        </ListItem>
-        <ListItem component={Link} href="">
+        </StyledListItem>
+        <StyledListItem component={Link} href="">
           <ListItemText primary="Settings" />
-        </ListItem>
+        </StyledListItem>
       </List>
 
-      <Box
-        sx={{
-          padding: 2,
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          gap: 1,
-        }}
-      >
+      <AvatarContainer>
         <Avatar
           sx={{ bgcolor: 'grey.300', width: 32, height: 32, fontSize: 16 }}
         >
           A
         </Avatar>
         <strong>Admin</strong>
-      </Box>
-    </Drawer>
+      </AvatarContainer>
+    </DrawerContainer>
 
-    <main style={{ marginLeft: '200px', padding: '20px' }}>{children}</main>
+    <MainContent>{children}</MainContent>
   </>
 );
 

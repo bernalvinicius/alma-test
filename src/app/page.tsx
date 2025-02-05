@@ -1,11 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Grid, Modal, TextField, Typography } from '@mui/material';
+import { Button, Grid, Modal, TextField, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import Image from 'next/image';
 import { authenticateUser, setUser } from '@/redux/slices/userSlice';
+import {
+  Container,
+  Logo,
+  StyledButtonPrimary,
+  StyledButtonSecondary,
+  ModalContent,
+} from './HomeStyles';
 
 const Home: React.FC = () => {
   const router = useRouter();
@@ -28,7 +35,6 @@ const Home: React.FC = () => {
     dispatch(setUser({ username, password }));
     dispatch(authenticateUser());
 
-    // Após a autenticação, redirecionar para /leads
     router.push('/leads');
     setOpenModal(false);
   };
@@ -40,17 +46,8 @@ const Home: React.FC = () => {
   }, [isAuthenticated, router]);
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        padding: 2,
-      }}
-    >
-      <Box sx={{ margin: '30px 0' }}>
+    <Container>
+      <Logo>
         <Image
           src="/alma-logo.png"
           width={90}
@@ -58,58 +55,31 @@ const Home: React.FC = () => {
           style={{ objectFit: 'contain' }}
           alt="logo"
         />
-      </Box>
+      </Logo>
 
       <Grid container spacing={2} justifyContent="center">
         <Grid item xs={12} sm={6} md={4}>
-          <Button
+          <StyledButtonPrimary
             variant="contained"
-            fullWidth
-            sx={{
-              height: '150px',
-              fontSize: '1.5rem',
-              backgroundColor: 'primary.main',
-              '&:hover': { backgroundColor: 'primary.dark' },
-            }}
             onClick={() => handleNavigate('/assessment')}
+            color="primary"
           >
             Go to Assessment
-          </Button>
+          </StyledButtonPrimary>
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
-          <Button
+          <StyledButtonSecondary
             variant="contained"
-            fullWidth
-            sx={{
-              height: '150px',
-              fontSize: '1.5rem',
-              backgroundColor: 'secondary.main',
-              '&:hover': { backgroundColor: 'secondary.dark' },
-            }}
             onClick={() => handleNavigate('/leads')}
+            color="secondary"
           >
             Go to Leads
-          </Button>
+          </StyledButtonSecondary>
         </Grid>
       </Grid>
 
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'white',
-            padding: 4,
-            borderRadius: 2,
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            minWidth: 300,
-          }}
-        >
+        <ModalContent>
           <Typography variant="h6" gutterBottom>
             Please Login
           </Typography>
@@ -133,9 +103,9 @@ const Home: React.FC = () => {
           <Button variant="contained" fullWidth onClick={handleLogin}>
             Login
           </Button>
-        </Box>
+        </ModalContent>
       </Modal>
-    </Box>
+    </Container>
   );
 };
 

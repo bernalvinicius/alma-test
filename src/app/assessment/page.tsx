@@ -1,52 +1,36 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
-import axios from 'axios';
+import { useRouter } from 'next/navigation';
 import {
-  TextField,
   Button,
   Checkbox,
   FormControlLabel,
   FormGroup,
   FormControl,
   FormLabel,
-  Paper,
   Typography,
   Box,
   Container,
 } from '@mui/material';
+import { validationSchema } from './validationSchema';
+import type { FormData } from './validationSchema';
+import {
+  StyledBox,
+  StyledContainer,
+  StyledPaper,
+  StyledTextField,
+  StyledTypography,
+  StyledButton,
+  StyledImage,
+  BackgroundBox,
+} from './StyledComponents';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  linkedin: string;
-  comments: string;
-  visa: string[];
-  resume: FileList;
-}
-
-const validationSchema = Yup.object({
-  firstName: Yup.string().required('First Name is required'),
-  lastName: Yup.string().required('Last Name is required'),
-  email: Yup.string().email('Invalid email').required('Email is required'),
-  linkedin: Yup.string()
-    .url('Invalid LinkedIn URL')
-    .required('LinkedIn is required'),
-  comments: Yup.string().required('This field is required'),
-  visa: Yup.array().min(1),
-  resume: Yup.mixed(),
-});
-
-export default function Assessment() {
+const Assessment = () => {
   const router = useRouter();
-
   const {
     register,
     handleSubmit,
@@ -59,7 +43,6 @@ export default function Assessment() {
   });
 
   const resumeFile = watch('resume');
-  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const savedData = JSON.parse(localStorage.getItem('formData') || '{}');
@@ -78,12 +61,9 @@ export default function Assessment() {
 
     try {
       // await axios.post('/api/leads', formData);
-      console.log('deu certo: ', formData);
 
-      // setSubmitted(true);
       reset();
       localStorage.removeItem('formData');
-
       router.push('/assessment/thank-you');
     } catch (error) {
       console.error('Submission failed', error);
@@ -95,16 +75,8 @@ export default function Assessment() {
   };
 
   return (
-    <Box>
-      <Box
-        sx={{
-          height: 300,
-          backgroundColor: '#d9dea5',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+    <StyledBox>
+      <BackgroundBox>
         <Container sx={{ textAlign: 'center' }}>
           <Box sx={{ margin: '30px 0' }}>
             <Image
@@ -140,46 +112,28 @@ export default function Assessment() {
             of your immigration case
           </Typography>
         </Container>
-      </Box>
+      </BackgroundBox>
 
-      <Container
-        maxWidth="sm"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
+      <StyledContainer maxWidth="sm">
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
             flexDirection: 'column',
+            alignItems: 'center',
             marginTop: 3,
           }}
         >
           <Box>
-            <Image
+            <StyledImage
               src="/icon-magnifier.png"
               width={50}
               height={80}
-              style={{ objectFit: 'contain' }}
-              alt="logo"
+              alt="icon"
             />
           </Box>
-          <Typography
-            variant="h5"
-            sx={{
-              color: '#000',
-              textAlign: 'center',
-              fontWeight: 700,
-              lineHeight: '22px',
-              marginBottom: 1,
-            }}
-          >
+          <StyledTypography variant="h5">
             Want to understand your visa options?
-          </Typography>
+          </StyledTypography>
           <Typography
             variant="body1"
             sx={{
@@ -194,18 +148,10 @@ export default function Assessment() {
             case based on your goals.
           </Typography>
         </Box>
-        <Paper
-          elevation={3}
-          sx={{
-            p: 3,
-            mt: 5,
-            border: 'none',
-            boxShadow: 'none',
-            maxWidth: '500px',
-          }}
-        >
+
+        <StyledPaper elevation={3}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <TextField
+            <StyledTextField
               fullWidth
               label="First Name"
               {...register('firstName')}
@@ -213,8 +159,7 @@ export default function Assessment() {
               helperText={errors.firstName?.message}
               margin="normal"
             />
-
-            <TextField
+            <StyledTextField
               fullWidth
               label="Last Name"
               {...register('lastName')}
@@ -222,8 +167,7 @@ export default function Assessment() {
               helperText={errors.lastName?.message}
               margin="normal"
             />
-
-            <TextField
+            <StyledTextField
               fullWidth
               label="Email"
               type="email"
@@ -232,8 +176,7 @@ export default function Assessment() {
               helperText={errors.email?.message}
               margin="normal"
             />
-
-            <TextField
+            <StyledTextField
               fullWidth
               label="LinkedIn Profile"
               {...register('linkedin')}
@@ -246,32 +189,21 @@ export default function Assessment() {
               sx={{
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center',
                 flexDirection: 'column',
                 marginTop: 3,
               }}
             >
               <Box>
-                <Image
+                <StyledImage
                   src="/icon-magnifier.png"
                   width={50}
                   height={80}
-                  style={{ objectFit: 'contain' }}
-                  alt="logo"
+                  alt="icon"
                 />
               </Box>
-              <Typography
-                variant="h5"
-                sx={{
-                  color: '#000',
-                  textAlign: 'center',
-                  fontWeight: 700,
-                  lineHeight: '22px',
-                  marginBottom: 1,
-                }}
-              >
+              <StyledTypography variant="h5">
                 Visa categories of interest?
-              </Typography>
+              </StyledTypography>
             </Box>
 
             <FormControl component="fieldset" margin="normal">
@@ -293,38 +225,27 @@ export default function Assessment() {
               sx={{
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center',
                 flexDirection: 'column',
                 marginTop: 3,
               }}
             >
               <Box>
-                <Image
+                <StyledImage
                   src="/icon-magnifier.png"
                   width={50}
                   height={80}
-                  style={{ objectFit: 'contain' }}
-                  alt="logo"
+                  alt="icon"
                 />
               </Box>
-              <Typography
-                variant="h5"
-                sx={{
-                  color: '#000',
-                  textAlign: 'center',
-                  fontWeight: 700,
-                  lineHeight: '22px',
-                  marginBottom: 1,
-                }}
-              >
+              <StyledTypography variant="h5">
                 How can we help you?
-              </Typography>
+              </StyledTypography>
             </Box>
 
-            <TextField
+            <StyledTextField
               fullWidth
               label="Additional Comments"
-              placeholder="What is your current status and when does it expire? What is your past immigration history? Are you looking for long-term permanent residency or shot-term employment visa or both? Are there any timeline considerations?"
+              placeholder="What is your current status and when does it expire? What is your past immigration history? Are you looking for long-term permanent residency or short-term employment visa or both? Are there any timeline considerations?"
               multiline
               rows={4}
               {...register('comments')}
@@ -343,7 +264,6 @@ export default function Assessment() {
                 }}
                 style={{ display: 'none' }}
               />
-
               <Button
                 variant="contained"
                 component="span"
@@ -358,18 +278,20 @@ export default function Assessment() {
               </Typography>
             </Box>
 
-            <Button
+            <StyledButton
               type="submit"
               variant="contained"
               color="primary"
               fullWidth
-              sx={{ mt: 2, backgroundColor: '#000' }}
+              sx={{ mt: 2 }}
             >
               Submit
-            </Button>
+            </StyledButton>
           </form>
-        </Paper>
-      </Container>
-    </Box>
+        </StyledPaper>
+      </StyledContainer>
+    </StyledBox>
   );
-}
+};
+
+export default Assessment;
